@@ -45,7 +45,7 @@ v.compute_vina_maps(center=args.center, box_size=args.box_size)
 # Log file to record arguments for each ligand
 log_file_path = os.path.join(args.output_dir, 'docking_log.txt')
 with open(log_file_path, 'w') as log_file:
-    log_file.write("Docking Log\n===========\n")
+    log_file.write("\nDocking Log\n===========\n")
 
 # Process each ligand
 total_ligands = len(ligand_paths)
@@ -58,7 +58,7 @@ for i, ligand in enumerate(ligand_paths, start=1):
 
         print(f'Processing {ligand_base} ({i}/{total_ligands})...')
         with open(log_file_path, 'a') as log_file:
-            log_file.write(f'Processing {ligand_base} ({i}/{total_ligands})...')
+            log_file.write(f'\nProcessing {ligand_base} ({i}/{total_ligands})...\n')
 
         v.set_ligand_from_file(ligand)
         
@@ -73,20 +73,20 @@ for i, ligand in enumerate(ligand_paths, start=1):
 
         print(f'Score before minimization for {ligand_base}: %.3f (kcal/mol)' % energy[0])
         with open(log_file_path, 'a') as log_file:
-            log_file.write(f'Score before minimization for {ligand_base}: %.3f (kcal/mol)' % energy[0])
+            log_file.write(f'\nScore before minimization for {ligand_base}: %.3f (kcal/mol)' % energy[0])
 
         # Minimize locally the current pose
         energy_minimized = v.optimize()
 
         print(f'Score after minimization for {ligand_base}: %.3f (kcal/mol)' % energy_minimized[0])
         with open(log_file_path, 'a') as log_file:
-            log_file.write(f'Score after minimization for {ligand_base}: %.3f (kcal/mol)' % energy_minimized[0])
+            log_file.write(f'\nScore after minimization for {ligand_base}: %.3f (kcal/mol)' % energy_minimized[0])
 
         v.write_pose(output_minimized, overwrite=args.overwrite)
 
         print(f'Wrote {output_minimized}')
         with open(log_file_path, 'a') as log_file:
-            log_file.write(f'Wrote {output_minimized}')
+            log_file.write(f'\nWrote {output_minimized}')
 
         # Dock the ligand
         v.dock(exhaustiveness=args.exhaustiveness, n_poses=args.n_poses)
@@ -94,27 +94,27 @@ for i, ligand in enumerate(ligand_paths, start=1):
 
         print(f'Wrote {output_vina}')
         with open(log_file_path, 'a') as log_file:
-            log_file.write(f'Wrote {output_vina}')
+            log_file.write(f'\nWrote {output_vina}')
 
         print(f'Completed processing {ligand_base}. {total_ligands - i} ligand(s) remaining.')
         with open(log_file_path, 'a') as log_file:
-            log_file.write(f'Completed processing {ligand_base}. {total_ligands - i} ligand(s) remaining.')
+            log_file.write(f'\nCompleted processing {ligand_base}. {total_ligands - i} ligand(s) remaining.')
 
 
         subprocess.run(['python', 'pdbqt_extract_zincid_affinity.py', '--src', args.output_dir, '--output_csv', f'{args.output_dir}/affinity_results.csv'], check=True)
         print(f'Updated {args.output_dir}/affinity_results.csv')
         with open(log_file_path, 'a') as log_file:
-            log_file.write(f'Updated {args.output_dir}/affinity_results.csv')
+            log_file.write(f'\nUpdated {args.output_dir}/affinity_results.csv')
 
     except RuntimeError as e:
         error_message = str(e)
         print(f"Error processing {ligand_base}: {error_message}")
         with open(log_file_path, 'a') as log_file:
-            log_file.write(f"Error processing {ligand_base}: {error_message}\n")
+            log_file.write(f"\nError processing {ligand_base}: {error_message}\n")
         continue
 
 # Indicate completion in the log file
 with open(log_file_path, 'a') as log_file:
     log_file.write
 
-subprocess.run(['python', 'pdbqt_extract_zincid_affinity.py', '--src', args.output_dir, '--output_csv', f'{args.output_dir}affinity_results.csv'], check=True)
+subprocess.run(['python', 'pdbqt_extract_zincid_affinity.py', '--src', args.output_dir, '--output_csv', f'{args.output_dir}/affinity_results.csv'], check=True)
