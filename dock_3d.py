@@ -157,7 +157,6 @@ def main():
                 time_components.append(format_time_component(seconds, "second", "seconds"))
 
             formatted_time_left = ", ".join(time_components)
-            formatted_time_left = ", ".join(time_components)
 
             logging.info(f'Processed {ligand_base}. {ligands_remaining} ligand(s) remaining.')
             logging.info(f'Time taken for this iteration: {time_taken_for_ligand:.2f} seconds.')
