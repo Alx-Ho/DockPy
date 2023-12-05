@@ -36,7 +36,7 @@ def main():
     args = parser.parse_args()
 
     data = process_directory(args.src)
-    df = pd.DataFrame(data).sort_values(by='affinity', ascending=False)
+    df = pd.DataFrame(data).sort_values(by='affinity')
     df.to_csv(args.output_csv, index=False)
 
 if __name__ == "__main__":
