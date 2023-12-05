@@ -99,7 +99,7 @@ def main():
             v.set_ligand_from_file(ligand)
                 
             # Log the arguments
-            logging.info(f'Ligand: {ligand_base}, Receptor: {receptor_base}, Center: {args.center}, '
+            logging.info(f'Ligand: {ligand}, Receptor: {args.receptor}, Center: {args.center}, '
                         f'Box Size: {args.box_size}, Exhaustiveness: {args.exhaustiveness}, '
                         f'Number of Poses: {args.n_poses}, Output Poses: {args.out_poses}')
 
