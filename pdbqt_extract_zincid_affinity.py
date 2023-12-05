@@ -12,7 +12,7 @@ def extract_zinc_id_and_affinity(file_path):
             if line.startswith('REMARK  Name ='):
                 zinc_id = line.split('=')[-1].strip()
             elif line.startswith('REMARK VINA RESULT:'):
-                affinity = line.split()[3]
+                affinity = float(line.split()[3])  # Convert affinity to float
 
     return zinc_id, affinity, file_path
 
@@ -36,7 +36,8 @@ def main():
     args = parser.parse_args()
 
     data = process_directory(args.src)
-    df = pd.DataFrame(data).sort_values(by='affinity')
+    df = pd.DataFrame(data)
+    df = df.sort_values(by='affinity', ascending=True)  # Ensure sorting is in ascending order
     df.to_csv(args.output_csv, index=False)
 
 if __name__ == "__main__":

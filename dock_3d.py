@@ -11,6 +11,13 @@ def create_base_filename(file_path):
     base_name = os.path.splitext(os.path.basename(file_path))[0]
     return base_name
 
+# Helper function to format time component
+def format_time_component(value, unit_singular, unit_plural):
+    if value == 1:
+        return f"{value} {unit_singular}"
+    else:
+        return f"{value} {unit_plural}"
+
 def setup_logging(output_dir):
     log_file_path = os.path.join(output_dir, 'docking_log.log')
 
@@ -47,6 +54,7 @@ def main():
     parser.add_argument('--out_poses', type=int, default=1, help='Number of poses to write out (optional, default=1)')
     parser.add_argument('--output_dir', default='.', help='Directory to write output files (optional, default is current directory)')
     parser.add_argument('--overwrite', type=bool, default=False, help='Allow overwriting of poses (optional, default is False)')
+    parser.add_argument('--keep_minimized', type=bool, default=False, help='Write ligand after locally minimizing initial pose (optional, default is False)')
 
     # Parse arguments
     args = parser.parse_args()
@@ -84,7 +92,6 @@ def main():
         try: 
             ligand_base = create_base_filename(ligand)
             receptor_base = create_base_filename(args.receptor)
-            output_minimized = os.path.join(args.output_dir, f'{ligand_base}_{receptor_base}_minimized.pdbqt')
             output_vina = os.path.join(args.output_dir, f'{ligand_base}_{receptor_base}_vina_out.pdbqt')
 
             logging.info(f'Processing {ligand_base} ({i}/{total_ligands})...')
@@ -106,15 +113,25 @@ def main():
 
             logging.info(f'Score after minimization for {ligand_base}: {energy_minimized[0]:.3f} kcal/mol')
 
-            v.write_pose(output_minimized, overwrite=args.overwrite)
-
-            logging.info(f'Wrote {output_minimized}')
+            if args.keep_minimized: 
+                output_minimized = os.path.join(args.output_dir, f'{ligand_base}_{receptor_base}_minimized.pdbqt')
+                v.write_pose(output_minimized, overwrite=args.overwrite)
+                logging.info(f'Wrote {output_minimized}')
 
             # Dock the ligand
             v.dock(exhaustiveness=args.exhaustiveness, n_poses=args.n_poses)
             v.write_poses(output_vina, n_poses=args.out_poses, overwrite=args.overwrite)
             logging.info(f'Wrote {output_vina}')
 
+            subprocess.run(['python', 'pdbqt_extract_zincid_affinity.py', '--src', args.output_dir, '--output_csv', f'{args.output_dir}/affinity_results.csv'], check=True)
+            logging.info(f'Updated {args.output_dir}/affinity_results.csv')
+
+        except RuntimeError as e:
+            error_message = str(e)
+            logging.error(f"Error processing {ligand_base}: {error_message}")
+            continue
+
+        finally:
             ligand_end_time = time.time()
             time_taken_for_ligand = ligand_end_time - ligand_start_time
             total_time_for_ligands += time_taken_for_ligand
@@ -126,21 +143,31 @@ def main():
             # Convert estimated_time_left to hours, minutes, and seconds
             hours, remainder = divmod(estimated_time_left, 3600)
             minutes, seconds = divmod(remainder, 60)
+            hours = int(hours)
+            minutes = int(minutes)
+            seconds = int(seconds)
 
-            logging.info(f'Completed processing {ligand_base}. {total_ligands - i} ligand(s) remaining.')
-            logging.info(f'Time taken for {ligand_base}: {ligand_end_time - ligand_start_time} seconds.')
-            logging.info(f'Estimated time left: {int(hours)} hours, {int(minutes)} minutes, {seconds:.2f} seconds')
+            # Format the string based on the values of hours, minutes, and seconds
+            time_components = []
+            if hours:
+                time_components.append(format_time_component(hours, "hour", "hours"))
+            if minutes:
+                time_components.append(format_time_component(minutes, "minute", "minutes"))
+            if seconds or not time_components:  # Include seconds if it's the only component
+                time_components.append(format_time_component(seconds, "second", "seconds"))
 
-            subprocess.run(['python', 'pdbqt_extract_zincid_affinity.py', '--src', args.output_dir, '--output_csv', f'{args.output_dir}/affinity_results.csv'], check=True)
-            logging.info(f'Updated {args.output_dir}/affinity_results.csv')
+            formatted_time_left = ", ".join(time_components)
+            formatted_time_left = ", ".join(time_components)
 
-        except RuntimeError as e:
-            error_message = str(e)
-            logging.error(f"Error processing {ligand_base}: {error_message}")
-            continue
+            logging.info(f'Processed {ligand_base}. {ligands_remaining} ligand(s) remaining.')
+            logging.info(f'Time taken for this iteration: {time_taken_for_ligand:.2f} seconds.')
+            logging.info(f'Estimated time left: {formatted_time_left}')
 
     # Indicate completion in the log file
     end_time = time.time()
     logging.info(f'Total docking time: {end_time - start_time} seconds.')
 
     subprocess.run(['python', 'pdbqt_extract_zincid_affinity.py', '--src', args.output_dir, '--output_csv', f'{args.output_dir}/affinity_results.csv'], check=True)
+
+if __name__ == "__main__":
+    main()
