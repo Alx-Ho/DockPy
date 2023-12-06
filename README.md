@@ -81,8 +81,6 @@ python preprocess.py --curl_file path/to/curl_file.curl --dst path/to/destinatio
 python dock.py --ligands path/to/ligands --receptor path/to/receptor.pdbqt --center 0 0 0 --box_size 20 20 20
 ```
 
-Replace `dock.py` with the name of this script.
-
 ### Workflow
 
 1. **Argument Parsing**: Parses command-line arguments for ligand and receptor files, docking box specifications, and other options.
