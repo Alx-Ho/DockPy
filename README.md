@@ -1,5 +1,26 @@
 # AutoDock ZINC Tools
 
+This repository hosts a suite of tools designed to facilitate molecular docking and processing using the AutoDock Vina software, specifically tailored for handling ZINC database files.
+
+# Table of Contents
+1. [AutoDock ZINC Tools](#autodock-zinc-tools)
+2. [Requirements](#requirements)
+3. [Conda Environment Setup](#conda-environment-setup)
+    - [Creating the Environment](#creating-the-environment)
+    - [Activating the Environment](#activating-the-environment)
+4. [Overview for preprocess.py](#overview-for-preprocesspy)
+    - [Required Arguments](#required-arguments)
+    - [Optional Arguments](#optional-arguments)
+    - [Example Command](#example-command)
+    - [Workflow](#workflow)
+    - [Notes](#notes)
+5. [Overview for dock.py](#overview-for-dockpy)
+    - [Required Arguments](#required-arguments-1)
+    - [Optional Arguments](#optional-arguments-1)
+    - [Example Command](#example-command-1)
+    - [Workflow](#workflow-1)
+    - [Notes](#notes-1)
+
 ## Requirements
 
 - Conda environment with dependencies specified in `vina_env.yml`.
