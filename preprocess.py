@@ -14,13 +14,13 @@ def main(curl_file_path, destination):
     os.makedirs(extracted_dir, exist_ok=True)
 
     # Step 1: Download
-    subprocess.run(['python', 'download_zinc_3d.py', '--curl_file', curl_file_path, '--dst', downloaded_dir], check=True)
+    subprocess.run(['python', 'download_zinc.py', '--curl_file', curl_file_path, '--dst', downloaded_dir], check=True)
 
     # Step 2: Uncompress
-    subprocess.run(['python', 'uncompress_zinc_3d.py', '--src', downloaded_dir], check=True)
+    subprocess.run(['python', 'uncompress_zinc.py', '--src', downloaded_dir], check=True)
 
     # Step 3: Extract
-    subprocess.run(['python', 'extract_zinc_3d.py', downloaded_dir, extracted_dir], check=True)
+    subprocess.run(['python', 'extract_zinc.py', downloaded_dir, extracted_dir], check=True)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Automated script to process ZINC 3D files.")

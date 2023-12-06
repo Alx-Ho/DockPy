@@ -19,7 +19,7 @@ def format_time_component(value, unit_singular, unit_plural):
         return f"{value} {unit_plural}"
 
 def setup_logging(output_dir):
-    log_file_path = os.path.join(output_dir, 'docking_log.log')
+    log_file_path = os.path.join(output_dir, 'docking.log')
 
     # Set up logging
     logger = logging.getLogger()
