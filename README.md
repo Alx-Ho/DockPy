@@ -3,7 +3,7 @@
 ## Requirements
 
 - Conda environment with dependencies specified in `vina_env.yml`.
-- AutoDock Vina and associated dependencies (for `dock.py`).
+- AutoDock Vina and associated dependencies (`dock.py` only).
 
 ## Conda Environment Setup
 
