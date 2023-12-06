@@ -123,7 +123,7 @@ def main():
             v.write_poses(output_vina, n_poses=args.out_poses, overwrite=args.overwrite)
             logging.info(f'Wrote {output_vina}')
 
-            subprocess.run(['python', 'pdbqt_extract_zincid_affinity.py', '--src', args.output_dir, '--output_csv', f'{args.output_dir}/affinity_results.csv'], check=True)
+            subprocess.run(['python', 'utils/pdbqt_extract_zincid_affinity.py', '--src', args.output_dir, '--output_csv', f'{args.output_dir}/affinity_results.csv'], check=True)
             logging.info(f'Updated {args.output_dir}/affinity_results.csv')
 
         except RuntimeError as e:
@@ -166,7 +166,7 @@ def main():
     end_time = time.time()
     logging.info(f'Total docking time: {end_time - start_time} seconds.')
 
-    subprocess.run(['python', 'pdbqt_extract_zincid_affinity.py', '--src', args.output_dir, '--output_csv', f'{args.output_dir}/affinity_results.csv'], check=True)
+    subprocess.run(['python', 'utils/pdbqt_extract_zincid_affinity.py', '--src', args.output_dir, '--output_csv', f'{args.output_dir}/affinity_results.csv'], check=True)
 
 if __name__ == "__main__":
     main()

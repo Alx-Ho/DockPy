@@ -15,18 +15,18 @@ def main(curl_file_path, destination, smiles_limit):
     os.makedirs(extracted_dir, exist_ok=True)
 
     # Download
-    subprocess.run(['python', 'download_zinc.py', '--curl_file', curl_file_path, '--dst', downloaded_dir], check=True)
+    subprocess.run(['python', 'utils/download_zinc.py', '--curl_file', curl_file_path, '--dst', downloaded_dir], check=True)
 
     # Uncompress
-    subprocess.run(['python', 'uncompress_zinc.py', '--src', downloaded_dir], check=True)
+    subprocess.run(['python', 'utils/uncompress_zinc.py', '--src', downloaded_dir], check=True)
 
     # Format SMILES
     for smiles_file in glob.glob(f'{downloaded_dir}/**/*.smi', recursive=True): 
         print(f'Converting {smiles_file} to PDBQT')
-        subprocess.run(['python', 'smiles_to_pdbqt.py', '--smiles_file', smiles_file, '--dst', os.path.join(downloaded_dir, 'converted_smiles'), '--smiles_limit', str(smiles_limit)], check=True)
+        subprocess.run(['python', 'utils/smiles_to_pdbqt.py', '--smiles_file', smiles_file, '--dst', os.path.join(downloaded_dir, 'converted_smiles'), '--smiles_limit', str(smiles_limit)], check=True)
 
     # Extract
-    subprocess.run(['python', 'extract_zinc.py', downloaded_dir, extracted_dir], check=True)
+    subprocess.run(['python', 'utils/extract_zinc.py', downloaded_dir, extracted_dir], check=True)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Automated script to process ZINC curl files.")
