@@ -45,9 +45,10 @@ def process_smiles(line, dst, log_queue):
 
 def main():
     parser = argparse.ArgumentParser(description='Convert SMILES to PDBQT for molecular docking.')
-    parser.add_argument('--smiles_file', type=str, help='Input file with SMILES strings and IDs')
+    parser.add_argument('--smiles_file', type=str, help='Input .smi file with SMILES strings and IDs')
     parser.add_argument('--dst', type=str, help='Output directory for PDBQT files', default='.')
     parser.add_argument('--num_processes', type=int, help='Number of processes to use', default=multiprocessing.cpu_count())
+    parser.add_argument('--smiles_limit', type=int, help='The maximum number of SMILES strings to process')
     args = parser.parse_args()
 
     dst = args.dst
@@ -58,6 +59,7 @@ def main():
         lines = file.readlines()
 
     total_smiles = len(lines)
+    processed_smiles = 0
 
     with Manager() as manager:
         log_queue = manager.Queue()
@@ -69,11 +71,19 @@ def main():
                 while not log_queue.empty():
                     log_message = log_queue.get()
                     print(log_message)
-                    total_smiles -= 1  # Decrement the counter
-                print(f"Remaining SMILES strings: {total_smiles}")
+                    processed_smiles += 1  # Increment the counter
+
+                    # Check if the processed_smiles limit is reached
+                    if args.smiles_limit and processed_smiles >= args.smiles_limit:
+                        pool.terminate()  # Terminate all worker processes
+                        print(f"Processed SMILES limit of {args.smiles_limit} reached. Stopping further processing.")
+                        return
+
+                print(f"Remaining SMILES strings: {total_smiles - processed_smiles}")
                 if all(worker.is_alive() == False for worker in pool._pool):
                     break
                 time.sleep(1)  # Wait a bit before checking the queue again
+
 
     print("Conversion complete.")
 

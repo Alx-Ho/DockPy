@@ -22,5 +22,5 @@ if __name__ == "__main__":
         os.makedirs(args.dst)
 
     # List of file extensions to copy
-    extensions = ['pdbqt', 'smi']
+    extensions = ['pdbqt']
     copy_files(args.src, args.dst, extensions)
