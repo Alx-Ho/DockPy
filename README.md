@@ -3,6 +3,7 @@
 ## Requirements
 
 - Conda environment with dependencies specified in `vina_env.yml`.
+- AutoDock Vina and associated dependencies (for `dock.py`).
 
 ## Conda Environment Setup
 
@@ -58,11 +59,6 @@ python preprocess.py --curl_file path/to/curl_file.curl --dst path/to/destinatio
 ## Overview for dock.py
 
 `dock.py` is an automated script designed for molecular docking using AutoDock Vina to automate the docking process of ligands to a given receptor and log the results. It is capable of processing multiple ligands, scoring, minimizing, and docking them to a specified receptor. The script also logs detailed information about the docking process and extracts affinity results.
-
-### Requirements
-
-- AutoDock Vina and associated dependencies.
-- The script assumes a Conda environment set up as per the provided `vina_env.yml`.
 
 ### Required Arguments
 
