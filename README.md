@@ -115,4 +115,5 @@ python dock.py --ligands path/to/ligands --receptor path/to/receptor.pdbqt --cen
 ### Notes
 
 - Ensure the presence of AutoDock Vina in your PATH environment variable (check with `echo $PATH` in terminal).
+- Remember to remove any ligands in the target box of the receptor that may interfere with docking results.
 - The script provides detailed logging, useful for tracking the progress and diagnosing issues.
