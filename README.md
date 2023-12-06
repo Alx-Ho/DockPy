@@ -91,7 +91,7 @@ python preprocess.py --curl_file path/to/curl_file.curl --dst path/to/destinatio
 ### Optional Arguments
 - `--exhaustiveness`: Exhaustiveness of the search, default is 32.
 - `--n_poses`: Number of docking poses to generate, default is 20.
-- `--out_poses`: Number of docking poses to output, default is 1.
+- `--out_poses`: Number of top docking poses to output, default is 1 (only the best pose).
 - `--output_dir`: Directory to write output files, default is the current directory.
 - `--overwrite`: Boolean flag to allow overwriting of output files, default is False.
 - `--keep_minimized`: Boolean flag to write ligand pose after local minimization, default is False.
