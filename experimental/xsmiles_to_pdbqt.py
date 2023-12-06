@@ -4,24 +4,24 @@ import rdkit
 import os
 
 # Create an argument parser
-parser = argparse.ArgumentParser(description='Convert PDB to PDBQT for molecular docking.')
-parser.add_argument('pdb_file', type=str, help='Input PDB file')
+parser = argparse.ArgumentParser(description='Convert SMILES to PDBQT for molecular docking.')
+parser.add_argument('smiles_file', type=str, help='Input SMILES file')
 parser.add_argument('-o', '--output', type=str, help='Optional output PDBQT file location', default=None)
 
 # Parse arguments
 args = parser.parse_args()
 
-ligand_pdb_file = args.pdb_file
+ligand_smiles_file = args.smiles_file
 output_file = args.output
 
 # Default output file name if not specified
 if not output_file:
-    output_file = os.path.splitext(ligand_pdb_file)[0] + '.pdbqt'
+    output_file = os.path.splitext(ligand_smiles_file)[0] + '.pdbqt'
     print(f"Output file not specified. Using default: {output_file}")
 
-print("Reading the molecule from the PDB file...")
+print("Reading the molecule from the SMILES file...")
 # Read the molecule
-lig = rdkit.Chem.MolFromPDBFile(ligand_pdb_file, removeHs=False)
+lig = rdkit.Chem.rdkit.Chem.MolFromSmiles(ligand_smiles_file, removeHs=False)
 
 print("Protonating the molecule...")
 protonated_lig = rdkit.Chem.AddHs(lig)
