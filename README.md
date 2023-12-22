@@ -1,8 +1,30 @@
 # AutoDock ZINC Tools
 
+This repository hosts a suite of tools designed to facilitate molecular docking and processing using the AutoDock Vina software, specifically tailored for handling ZINC database files.
+
+# Table of Contents
+1. [AutoDock ZINC Tools](#autodock-zinc-tools)
+2. [Requirements](#requirements)
+3. [Conda Environment Setup](#conda-environment-setup)
+    - [Creating the Environment](#creating-the-environment)
+    - [Activating the Environment](#activating-the-environment)
+4. [Overview for preprocess.py](#overview-for-preprocesspy)
+    - [Required Arguments](#required-arguments)
+    - [Optional Arguments](#optional-arguments)
+    - [Example Command](#example-command)
+    - [Workflow](#workflow)
+    - [Notes](#notes)
+5. [Overview for dock.py](#overview-for-dockpy)
+    - [Required Arguments](#required-arguments-1)
+    - [Optional Arguments](#optional-arguments-1)
+    - [Example Command](#example-command-1)
+    - [Workflow](#workflow-1)
+    - [Notes](#notes-1)
+
 ## Requirements
 
 - Conda environment with dependencies specified in `vina_env.yml`.
+- AutoDock Vina and associated dependencies (`dock.py` only).
 
 ## Conda Environment Setup
 
@@ -59,11 +81,6 @@ python preprocess.py --curl_file path/to/curl_file.curl --dst path/to/destinatio
 
 `dock.py` is an automated script designed for molecular docking using AutoDock Vina to automate the docking process of ligands to a given receptor and log the results. It is capable of processing multiple ligands, scoring, minimizing, and docking them to a specified receptor. The script also logs detailed information about the docking process and extracts affinity results.
 
-### Requirements
-
-- AutoDock Vina and associated dependencies.
-- The script assumes a Conda environment set up as per the provided `vina_env.yml`.
-
 ### Required Arguments
 
 - `--ligands`: Path to a ligand file or a directory containing multiple ligand files (in pdbqt format).
@@ -74,7 +91,7 @@ python preprocess.py --curl_file path/to/curl_file.curl --dst path/to/destinatio
 ### Optional Arguments
 - `--exhaustiveness`: Exhaustiveness of the search, default is 32.
 - `--n_poses`: Number of docking poses to generate, default is 20.
-- `--out_poses`: Number of docking poses to output, default is 1.
+- `--out_poses`: Number of top docking poses to output for each ligand, default is 1 (only the best pose).
 - `--output_dir`: Directory to write output files, default is the current directory.
 - `--overwrite`: Boolean flag to allow overwriting of output files, default is False.
 - `--keep_minimized`: Boolean flag to write ligand pose after local minimization, default is False.
@@ -84,8 +101,6 @@ python preprocess.py --curl_file path/to/curl_file.curl --dst path/to/destinatio
 ```bash
 python dock.py --ligands path/to/ligands --receptor path/to/receptor.pdbqt --center 0 0 0 --box_size 20 20 20
 ```
-
-Replace `dock.py` with the name of this script.
 
 ### Workflow
 
@@ -100,4 +115,5 @@ Replace `dock.py` with the name of this script.
 ### Notes
 
 - Ensure the presence of AutoDock Vina in your PATH environment variable (check with `echo $PATH` in terminal).
+- Remember to remove any ligands in the target box of the receptor that may interfere with docking results.
 - The script provides detailed logging, useful for tracking the progress and diagnosing issues.
