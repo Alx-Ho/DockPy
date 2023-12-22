@@ -8,13 +8,21 @@ import time
 
 # Function to process each SMILES line
 def process_smiles(line, dst, log_queue):
+    id_counter = 0
     try:
         parts = line.strip().split()
-        if len(parts) != 2:
+
+        if len(parts) == 2: 
+            smiles, id = parts
+        elif len(parts) == 1: 
+            smiles = parts[0]
+            id = id_counter
+            log_queue.put(f"SMILES string {smiles} does not have an ID. Assigning it ID {id}")
+            id_counter += 1
+        else:
             log_queue.put(f"Skipping invalid line: {line}")
             return
-        smiles, id = parts
-
+        
         output_file = os.path.join(dst, f"{id}.pdbqt")
         if os.path.exists(output_file):
             log_queue.put(f"Output file already exists, skipping: {output_file}")

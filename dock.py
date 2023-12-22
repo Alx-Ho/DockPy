@@ -104,20 +104,23 @@ def main():
                         f'Number of Poses: {args.n_poses}, Output Poses: {args.out_poses}')
 
             # Score the current pose
-            energy = v.score()
+            try: 
+                energy = v.score()
+ 
+                logging.info(f'Score before minimization for {ligand_base}: {energy[0]:.3f} kcal/mol')
 
-            logging.info(f'Score before minimization for {ligand_base}: {energy[0]:.3f} kcal/mol')
+                # Minimize locally the current pose
+                energy_minimized = v.optimize()
 
-            # Minimize locally the current pose
-            energy_minimized = v.optimize()
+                logging.info(f'Score after minimization for {ligand_base}: {energy_minimized[0]:.3f} kcal/mol')
 
-            logging.info(f'Score after minimization for {ligand_base}: {energy_minimized[0]:.3f} kcal/mol')
-
-            if args.keep_minimized: 
-                output_minimized = os.path.join(args.output_dir, f'{ligand_base}_{receptor_base}_minimized.pdbqt')
-                v.write_pose(output_minimized, overwrite=args.overwrite)
-                logging.info(f'Wrote {output_minimized}')
-
+                if args.keep_minimized: 
+                    output_minimized = os.path.join(args.output_dir, f'{ligand_base}_{receptor_base}_minimized.pdbqt')
+                    v.write_pose(output_minimized, overwrite=args.overwrite)
+                    logging.info(f'Wrote {output_minimized}')
+            except: 
+                logging.error(f'Could not score the ligand {ligand_base}. Continuing to docking.')
+                
             # Dock the ligand
             v.dock(exhaustiveness=args.exhaustiveness, n_poses=args.n_poses)
             v.write_poses(output_vina, n_poses=args.out_poses, overwrite=args.overwrite)
