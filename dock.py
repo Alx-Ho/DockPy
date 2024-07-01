@@ -68,6 +68,8 @@ def main():
     else:
         raise ValueError("The ligands argument must be either a directory or a file path.")
 
+    ligand_paths.sort()
+    
     # Create the output directory if it doesn't exist
     os.makedirs(args.output_dir, exist_ok=True)
 
@@ -93,6 +95,10 @@ def main():
             ligand_base = create_base_filename(ligand)
             receptor_base = create_base_filename(args.receptor)
             output_vina = os.path.join(args.output_dir, f'{ligand_base}_{receptor_base}_vina_out.pdbqt')
+            
+            if os.path.exists(output_vina) and not args.overwrite:
+                logging.info(f'Skipping {ligand_base} ({i}/{total_ligands}) as it has already been processed.')
+                continue
 
             logging.info(f'Processing {ligand_base} ({i}/{total_ligands})...')
 
@@ -129,7 +135,7 @@ def main():
             subprocess.run(['python', 'utils/pdbqt_extract_zincid_affinity.py', '--src', args.output_dir, '--output_csv', f'{args.output_dir}/affinity_results.csv'], check=True)
             logging.info(f'Updated {args.output_dir}/affinity_results.csv')
 
-        except RuntimeError as e:
+        except Exception as e:
             error_message = str(e)
             logging.error(f"Error processing {ligand_base}: {error_message}")
             continue

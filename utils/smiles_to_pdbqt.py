@@ -55,13 +55,18 @@ def main():
     parser = argparse.ArgumentParser(description='Convert SMILES to PDBQT for molecular docking.')
     parser.add_argument('--smiles_file', type=str, help='Input .smi file with SMILES strings and IDs')
     parser.add_argument('--dst', type=str, help='Output directory for PDBQT files', default='.')
-    parser.add_argument('--num_processes', type=int, help='Number of processes to use', default=multiprocessing.cpu_count())
-    parser.add_argument('--smiles_limit', type=int, help='The maximum number of SMILES strings to process')
+    parser.add_argument('--num_processes', type=int, help='Number of processes to use', default=4)
+    parser.add_argument('--smiles_limit', type=int, help='The maximum number of SMILES strings to process', default=-1)
     args = parser.parse_args()
 
     dst = args.dst
     if not os.path.exists(dst):
         os.makedirs(dst)
+        
+    if args.num_processes == -1: 
+        args.num_processes = multiprocessing.cpu_count()
+        
+    args.num_processes = int(args.num_processes)
 
     with open(args.smiles_file, 'r') as file:
         lines = file.readlines()
@@ -82,13 +87,13 @@ def main():
                     processed_smiles += 1  # Increment the counter
 
                     # Check if the processed_smiles limit is reached
-                    if args.smiles_limit and processed_smiles >= args.smiles_limit:
+                    if args.smiles_limit != -1 and processed_smiles >= args.smiles_limit:
                         pool.terminate()  # Terminate all worker processes
                         print(f"Processed SMILES limit of {args.smiles_limit} reached. Stopping further processing.")
                         return
 
                 print(f"Remaining SMILES strings: {total_smiles - processed_smiles}")
-                if all(worker.is_alive() == False for worker in pool._pool):
+                if all(worker.is_alive() == False for worker in pool._pool) or (total_smiles - processed_smiles) == 0:
                     break
                 time.sleep(1)  # Wait a bit before checking the queue again
 

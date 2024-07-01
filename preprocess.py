@@ -3,7 +3,7 @@ import subprocess
 import argparse
 import glob
 
-def main(curl_file_path, destination, smiles_limit):
+def main(curl_file_path, destination, smiles_limit, num_processes):
 
     # Ensure the destination directory exists
     os.makedirs(destination, exist_ok=True)
@@ -23,7 +23,7 @@ def main(curl_file_path, destination, smiles_limit):
     # Format SMILES
     for smiles_file in glob.glob(f'{downloaded_dir}/**/*.smi', recursive=True): 
         print(f'Converting {smiles_file} to PDBQT')
-        subprocess.run(['python', 'utils/smiles_to_pdbqt.py', '--smiles_file', smiles_file, '--dst', os.path.join(downloaded_dir, 'converted_smiles'), '--smiles_limit', str(smiles_limit)], check=True)
+        subprocess.run(['python', 'utils/smiles_to_pdbqt.py', '--smiles_file', smiles_file, '--dst', os.path.join(downloaded_dir, 'converted_smiles'), '--smiles_limit', str(smiles_limit), '--num_processes', str(num_processes)], check=True)
 
     # Extract
     subprocess.run(['python', 'utils/extract_zinc.py', downloaded_dir, extracted_dir], check=True)
@@ -32,7 +32,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Automated script to process ZINC curl files.")
     parser.add_argument("--curl_file", type=str, help="Path to the .curl file")
     parser.add_argument("--dst", type=str, help="Path to the destination directory")
-    parser.add_argument("--smiles_limit", type=int, help="The maximum number of SMILES strings to process. NOTE: This limit is approximate since conversions are done with multiprocessing.", default=None)
-
+    parser.add_argument("--smiles_limit", type=int, help="The maximum number of SMILES strings to process. NOTE: This limit is approximate since conversions are done with multiprocessing.", default=-1)
+    parser.add_argument("--num_processes", type=int, help="Number of threads to use for conversion from SMILES to PDBQT", default=-1)
     args = parser.parse_args()
-    main(args.curl_file, args.dst, args.smiles_limit)
+    main(args.curl_file, args.dst, args.smiles_limit, args.num_processes)
