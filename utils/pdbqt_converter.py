@@ -45,8 +45,8 @@ def main():
     parser.add_argument('--dst', type=str, help='Output directory for converted files', default='.')
     parser.add_argument('--num_processes', type=int, help='Number of processes to use', default=4)
     parser.add_argument('--file_limit', type=int, help='The maximum number of PDBQT files to process', default=-1)
-    parser.add_argument('--output_format', type=str, choices=['pdb', 'sdf'], default='sdf',
-                        help='Output format (pdb or sdf). Default is sdf.')
+    parser.add_argument('--output_format', type=str, choices=['pdb', 'sdf'], default='pdb',
+                        help='Output format (pdb or sdf). Default is pdb.')
     args = parser.parse_args()
 
     dst = args.dst
