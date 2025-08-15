@@ -21,6 +21,7 @@ This repository hosts a suite of tools designed to facilitate molecular docking 
     - [Workflow](#workflow-1)
     - [Notes](#notes-1)
 6. [Preparing Custom Ligands for Docking](#preparing-custom-ligands-for-docking)
+7. [Post-Processing Docking Results](#post-processing-docking-results)
 
 
 ## Requirements
@@ -267,3 +268,136 @@ COMP003,c1ccccc1,78.11
 - Large datasets can be processed in chunks using the `--max_rows` parameter
 - The conversion process may take considerable time for large compound libraries due to 3D structure generation
 - For the ChEMBL dataset, consider starting with a subset using `--max_rows` to test your workflow before processing the entire dataset
+
+# Post-Processing Docking Results
+
+After running molecular docking with `dock.py`, you may want to analyze the results and convert the output files to different formats. DockPy provides utilities for selecting the best-performing ligands and converting PDBQT files to other molecular formats.
+
+## Selecting Top-Performing Ligands
+
+### Overview for get_top_n_affinities.py
+
+`get_top_n_affinities.py` is a utility script that identifies and copies the top N molecules with the best (lowest) binding affinities from your docking results. This is useful for focusing on the most promising compounds for further analysis.
+
+#### Required Arguments
+
+- `input_dir`: Directory containing the docking results with `affinity_results.csv`
+- `output_dir`: Directory where the top molecules will be copied
+- `n`: Number of top molecules to select (integer)
+
+#### Example Commands
+
+**Select top 10 molecules:**
+```bash
+python utils/get_top_n_affinities.py docking_results/ top_10_molecules/ 10
+```
+
+**Select top 50 molecules from a large screening:**
+```bash
+python utils/get_top_n_affinities.py large_screen_results/ best_50_hits/ 50
+```
+
+#### Workflow
+
+1. **CSV Analysis**: Reads the `affinity_results.csv` file from the input directory
+2. **Sorting**: Sorts molecules by binding affinity (lowest/best values first)
+3. **Selection**: Selects the top N molecules based on affinity scores
+4. **File Copying**: Copies the corresponding PDBQT files to the output directory with ranked filenames
+5. **Ranking**: Renames files with rank prefixes (e.g., `rank_01_`, `rank_02_`, etc.)
+
+#### Output Structure
+
+The script creates an output directory containing:
+- `affinity_results.csv`: Copy of the original results file
+- `rank_01_[original_filename].pdbqt`: Best-scoring molecule
+- `rank_02_[original_filename].pdbqt`: Second-best molecule
+- And so on...
+
+#### Notes
+
+- The script automatically determines the number of digits needed for ranking based on N
+- Files are ranked from best (lowest affinity) to worst within the selected top N
+- The original `affinity_results.csv` is copied to the output directory for reference
+- If a PDBQT file cannot be found, a warning is displayed and the file is skipped
+
+## Converting PDBQT Files to Other Formats
+
+### Overview for pdbqt_converter.py
+
+`pdbqt_converter.py` converts PDBQT files (the output format from AutoDock Vina) to more commonly used molecular formats like PDB or SDF. This is useful for visualization in molecular viewers or further analysis with other software tools.
+
+#### Required Arguments
+
+- `--pdbqt_dir`: Directory containing PDBQT files to convert
+
+#### Optional Arguments
+
+- `--dst`: Output directory for converted files (default: current directory)
+- `--num_processes`: Number of CPU cores to use for parallel processing (default: 4, use -1 for all cores)
+- `--file_limit`: Maximum number of files to process (default: -1 for all files)
+- `--output_format`: Output format - either 'pdb' or 'sdf' (default: 'pdb')
+
+#### Example Commands
+
+**Convert all PDBQT files to PDB format:**
+```bash
+python utils/pdbqt_converter.py --pdbqt_dir docking_results/ --dst converted_pdb/ --output_format pdb
+```
+
+**Convert top molecules to SDF format:**
+```bash
+python utils/pdbqt_converter.py --pdbqt_dir top_10_molecules/ --dst top_molecules_sdf/ --output_format sdf --num_processes 8
+```
+
+**Convert only first 100 files for testing:**
+```bash
+python utils/pdbqt_converter.py --pdbqt_dir large_results/ --dst test_conversion/ --file_limit 100
+```
+
+#### Format Differences
+
+**PDB Format:**
+- Contains only the first conformer of the first molecule
+- Widely supported by molecular visualization software
+- Good for structural analysis and visualization
+
+**SDF Format:**
+- Contains all conformers of all molecules
+- Preserves multiple binding poses from docking
+- Better for comprehensive analysis of docking results
+- Suitable for cheminformatics workflows
+
+#### Workflow
+
+1. **File Discovery**: Identifies all PDBQT files in the specified directory
+2. **Parallel Processing**: Uses multiprocessing to convert files efficiently
+3. **Format Conversion**: Converts PDBQT to the specified output format using RDKit and Meeko
+4. **Output Generation**: Creates converted files with the same base name but different extension
+
+#### Notes
+
+- The script preserves the original filename but changes the extension (e.g., `molecule.pdbqt` → `molecule.pdb`)
+- Uses multiprocessing for faster conversion of large datasets
+- Automatically skips files that already exist in the output directory
+- Provides detailed logging of the conversion process
+- Requires RDKit and Meeko libraries (included in the conda environment)
+
+## Complete Post-Processing Workflow Example
+
+Here's a typical workflow for analyzing docking results:
+
+```bash
+# 1. Run docking (assuming this was already completed)
+python dock.py --ligands ligands/ --receptor protein.pdbqt --center 0 0 0 --box_size 25 25 25 --output_dir docking_results/
+
+# 2. Select top 20 molecules with best affinities
+python utils/get_top_n_affinities.py docking_results/ top_20_hits/ 20
+
+# 3. Convert the top hits to PDB format for visualization
+python utils/pdbqt_converter.py --pdbqt_dir top_20_hits/ --dst top_20_pdb/ --output_format pdb
+
+# 4. Optionally, convert to SDF format for cheminformatics analysis
+python utils/pdbqt_converter.py --pdbqt_dir top_20_hits/ --dst top_20_sdf/ --output_format sdf
+```
+
+This workflow allows you to efficiently identify promising compounds from large virtual screening campaigns and prepare them for further analysis or experimental validation.
