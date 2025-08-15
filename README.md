@@ -20,6 +20,8 @@ This repository hosts a suite of tools designed to facilitate molecular docking 
     - [Example Command](#example-command-1)
     - [Workflow](#workflow-1)
     - [Notes](#notes-1)
+6. [Preparing Custom Ligands for Docking](#preparing-custom-ligands-for-docking)
+
 
 ## Requirements
 
@@ -117,3 +119,151 @@ python dock.py --ligands path/to/ligands --receptor path/to/receptor.pdbqt --cen
 - Ensure the presence of AutoDock Vina in your PATH environment variable (check with `echo $PATH` in terminal).
 - Remember to remove any ligands in the target box of the receptor that may interfere with docking results.
 - The script provides detailed logging, useful for tracking the progress and diagnosing issues.
+
+
+# Preparing Custom Ligands for Docking
+
+This section covers how to prepare your own set of ligands (not from ZINC database) for molecular docking using the DockPy utilities.
+
+## Overview
+
+If you have a CSV file containing SMILES strings of compounds you want to dock, you can use the `utils/csv_to_smi.py` script to convert them to the .smi format, then process them through the standard DockPy workflow.
+
+## Step-by-Step Process
+
+### 1. Convert CSV to .smi Format
+
+First, convert your CSV file containing SMILES strings to the .smi format required by DockPy:
+
+```bash
+python utils/csv_to_smi.py --csv_file your_compounds.csv --smiles_column "SMILES" --output_file compounds.smi
+```
+
+#### Required Arguments
+- `--csv_file`: Path to your input CSV file
+- `--smiles_column`: Name of the column containing SMILES strings
+- `--output_file`: Path where the .smi file will be created
+
+#### Optional Arguments
+- `--id_column`: Name of column to use as compound identifier (if not provided, compounds will be numbered automatically)
+- `--max_rows`: Maximum number of rows to process from the CSV
+
+#### Example Commands
+
+**Basic conversion:**
+```bash
+python utils/csv_to_smi.py --csv_file molecules.csv --smiles_column "smiles" --output_file ligands.smi
+```
+
+**With custom ID column:**
+```bash
+python utils/csv_to_smi.py --csv_file molecules.csv --smiles_column "canonical_smiles" --id_column "compound_id" --output_file ligands.smi
+```
+
+**Process only first 500 compounds:**
+```bash
+python utils/csv_to_smi.py --csv_file molecules.csv --smiles_column "smiles" --output_file ligands.smi --max_rows 500
+```
+
+### 2. Convert SMILES to PDBQT Format
+
+Once you have the .smi file, convert the SMILES strings to PDBQT format for docking:
+
+```bash
+python utils/smiles_to_pdbqt.py --smiles_file ligands.smi --dst ligand_pdbqts/ --num_processes 8
+```
+
+#### Arguments
+- `--smiles_file`: Path to the .smi file created in step 1
+- `--dst`: Output directory for PDBQT files
+- `--num_processes`: Number of CPU cores to use (optional, default=4)
+- `--smiles_limit`: Maximum number of SMILES to process (optional, -1 for all)
+
+### 3. Run Molecular Docking
+
+Now you can use the generated PDBQT files with the main docking script:
+
+```bash
+python dock.py --ligands ligand_pdbqts/ --receptor receptor.pdbqt --center 0 0 0 --box_size 20 20 20 --output_dir docking_results/
+```
+
+## Complete Workflow Example
+
+Here's a complete example starting from a CSV file:
+
+```
+# 1. Convert CSV to .smi format
+python utils/csv_to_smi.py \
+    --csv_file my_compounds.csv \
+    --smiles_column "SMILES" \
+    --id_column "compound_name" \
+    --output_file my_ligands.smi \
+    --max_rows 1000
+
+# 2. Convert SMILES to PDBQT
+python utils/smiles_to_pdbqt.py \
+    --smiles_file my_ligands.smi \
+    --dst prepared_ligands/ \
+    --num_processes 8
+
+# 3. Run docking
+python dock.py \
+    --ligands prepared_ligands/ \
+    --receptor protein.pdbqt \
+    --center 10.5 -5.2 8.1 \
+    --box_size 25 25 25 \
+    --output_dir docking_results/ \
+    --exhaustiveness 32
+```
+
+## ChEMBL Small Molecule Drugs Example
+
+For the included ChEMBL small molecule drugs dataset:
+
+```
+# 1. Convert ChEMBL CSV to .smi format
+python utils/csv_to_smi.py \
+    --csv_file chembl_sm_drugs_08152025.csv \
+    --smiles_column "Smiles" \
+    --id_column "Parent Molecule" \
+    --output_file chembl_sm_drugs.smi
+
+# 2. Convert SMILES to PDBQT (process first 1000 for testing)
+python utils/smiles_to_pdbqt.py \
+    --smiles_file chembl_sm_drugs.smi \
+    --dst chembl_ligands/ \
+    --num_processes 8 \
+    --smiles_limit 1000
+
+# 3. Run docking against your target
+python dock.py \
+    --ligands chembl_ligands/ \
+    --receptor your_receptor.pdbqt \
+    --center X Y Z \
+    --box_size 25 25 25 \
+    --output_dir chembl_docking_results/
+```
+
+## CSV File Requirements
+
+Your CSV file should:
+- Have a header row with column names
+- Contain a column with valid SMILES strings
+- Optionally include a column with unique compound identifiers
+- Use standard CSV formatting (comma-separated values)
+
+**Example CSV structure:**
+```csv
+compound_id,SMILES,molecular_weight
+COMP001,CCO,46.07
+COMP002,CC(=O)O,60.05
+COMP003,c1ccccc1,78.11
+```
+
+## Notes
+
+- The script will automatically skip rows with missing or invalid SMILES strings
+- If no ID column is specified, compounds will be automatically numbered as `compound_0`, `compound_1`, etc.
+- Large datasets can be processed in chunks using the `--max_rows` parameter
+- The conversion process may take considerable time for large compound libraries due to 3D structure generation
+- For the ChEMBL dataset, consider starting with a subset using `--max_rows` to test your workflow before processing the entire dataset
